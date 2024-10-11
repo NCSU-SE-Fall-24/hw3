@@ -1,7 +1,10 @@
-grep -l "sample" dataset1/* | while read -r file; do
-    count=$(grep -o "CSC510" "$file" | wc -l)
-    if (( count >= 3 )); then
-        size=$(wc -c < "$file")
-        echo "$count $size $file"
-    fi
-done | sort -nr | sort -k1,1nr -k2,2n | awk '{print $3}' | sed 's/file_/filtered_/g'
+grep -l "sample" dataset1/* | 
+xargs -I{} sh -c '
+  count=$(grep -o "CSC510" "{}" | wc -l); 
+  if [ "$count" -ge 3 ]; then 
+    size=$(wc -c < "{}"); 
+    echo "$count $size {}"; 
+  fi' | 
+sort -k1,1nr -k2,2nr |  # Sort by occurrences (desc) and size (desc)
+awk '{print $1, $2, $3}' | 
+sed 's/file_/filtered_/g'
